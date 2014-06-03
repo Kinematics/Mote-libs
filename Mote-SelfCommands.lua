@@ -187,10 +187,10 @@ function handle_cycle(cmdParams)
 	end
 	
 	-- identifier for the field we're changing
-	local paramField = cmdParams[1]:lower()
+	local paramField = cmdParams[1]
 	local modeField = paramField
 
-	if paramField:endswith('mode') then
+	if paramField:endswith('mode') or paramField:endswith('Mode') then
 		-- Remove 'mode' from the end of the string
 		modeField = paramField:sub(1,#paramField-4)
 	end
@@ -199,6 +199,7 @@ function handle_cycle(cmdParams)
 	if modeField == "ws" then
 		modeField = "weaponskill"
 	end
+	
 	-- Capitalize the field (for use on output display)
 	modeField = modeField:gsub("%f[%a]%a", string.upper)
 
