@@ -551,3 +551,83 @@ function time_change(new_time, old_time)
 	end
 end
 
+
+-- Call from precast()
+function custom_aftermath_timers_precast(spell)
+    if spell.type == 'WeaponSkill' then
+        info.aftermath = {}
+        
+        local relic_ws = data.weaponskills.relic[player.equipment.main] or data.weaponskills.relic[player.equipment.range]
+        local mythic_ws = data.weaponskills.mythic[player.equipment.main] or data.weaponskills.mythic[player.equipment.range]
+        local empy_ws = data.weaponskills.empyrean[player.equipment.main] or data.weaponskills.empyrean[player.equipment.range]
+        
+        if not relic_ws and not mythic_ws and not empy_ws then
+            return
+        end
+
+        info.aftermath.weaponskill = spell.english
+        info.aftermath.duration = 0
+        
+        info.aftermath.level = math.floor(player.tp / 100)
+        if info.aftermath.level == 0 then
+            info.aftermath.level = 1
+        end
+        
+        if spell.english == relic_ws then
+            info.aftermath.duration = math.floor(0.2 * player.tp)
+            if info.aftermath.duration < 20 then
+                info.aftermath.duration = 20
+            end
+        elseif spell.english == empy_ws then
+            -- nothing can overwrite lvl 3
+            if buffactive['Aftermath: Lv.3'] then
+                return
+            end
+            -- only lvl 3 can overwrite lvl 2
+            if info.aftermath.level ~= 3 and buffactive['Aftermath: Lv.2'] then
+                return
+            end
+            
+            -- duration is based on aftermath level
+            info.aftermath.duration = 30 * info.aftermath.level
+        elseif spell.english == mythic_ws then
+            -- nothing can overwrite lvl 3
+            if buffactive['Aftermath: Lv.3'] then
+                return
+            end
+            -- only lvl 3 can overwrite lvl 2
+            if info.aftermath.level ~= 3 and buffactive['Aftermath: Lv.2'] then
+                return
+            end
+
+            -- Assume mythic is lvl 80 or higher, for duration
+            
+            -- Some mythics have special durations for level 1 and 2 aftermaths
+            local special_duration = S{'Tizona', 'Kenkonken', 'Murgleis', 'Yagrush', 'Carnwenhan', 'Nirvana', 'Tupsimati'}
+            
+            if info.aftermath.level == 1 then
+                info.aftermath.duration = (special_duration:contains(spell.english) and 270) or 90
+            elseif info.aftermath.level == 2 then
+                info.aftermath.duration = (special_duration:contains(spell.english) and 270) or 120
+            else
+                info.aftermath.duration = 180
+            end
+        end
+    end
+end
+
+function custom_aftermath_timers_aftercast(spell)
+    if not spell.interrupted and spell.type == 'WeaponSkill' and
+       info.aftermath and info.aftermath.weaponskill == spell.english and info.aftermath.duration > 0 then
+
+        local aftermath_name = 'Aftermath: Lv.'..tostring(info.aftermath.level)
+        send_command('timers d "Aftermath: Lv.1"')
+        send_command('timers d "Aftermath: Lv.2"')
+        send_command('timers d "Aftermath: Lv.3"')
+        send_command('timers c "'..aftermath_name..'" '..tostring(info.aftermath.duration)..' down abilities/00027.png')
+
+        info.aftermath = {}
+    end
+end
+
+
