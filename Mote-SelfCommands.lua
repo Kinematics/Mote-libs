@@ -510,8 +510,11 @@ function handle_update(cmdParams)
 		job_update(cmdParams, eventArgs)
 	end
 
-	if not eventArgs.handled and handle_equipping_gear then
-		handle_equipping_gear(player.status)
+	if not eventArgs.handled then
+		reset_buff_states()
+		if handle_equipping_gear then
+			handle_equipping_gear(player.status)
+		end
 	end
 
 	if cmdParams[1] == 'user' then
