@@ -62,23 +62,20 @@ function binds_on_load()
 	send_command('bind ^= gs c cycle pctargetmode')
 end
 
--- Function to re-bind Spellcast binds when unloading GearSwap.
+-- Function to revert binds when unloading.
 function binds_on_unload()
-	-- Commented out for now, since we don't expect Spellcast to be loaded anymore.
-	--[[
-	send_command('bind f9 input /ma CombatMode Cycle(Offense)')
-	send_command('bind ^f9 input /ma CombatMode Cycle(Defense)')
-	send_command('bind !f9 input /ma CombatMode Cycle(WS)')
-	send_command('bind f10 input /ma PhysicalDefense .On')
-	send_command('bind ^f10 input /ma PhysicalDefense .Cycle')
-	send_command('bind !f10 input /ma CombatMode Toggle(Kite)')
-	send_command('bind f11 input /ma MagicalDefense .On')
-	send_command('bind ^f11 input /ma CycleCastingMode')
-	send_command('bind !f11 input /ma CastingMode Dire')
-	send_command('bind f12 input /ma Update .Manual')
-	send_command('bind ^f12 input /ma CycleIdleMode')
-	send_command('bind !f12 input /ma Reset .Defense')
-	--]]
+	send_command('unbind f9')
+	send_command('unbind ^f9')
+	send_command('unbind !f9')
+	send_command('unbind f10')
+	send_command('unbind ^f10')
+	send_command('unbind !f10')
+	send_command('unbind f11')
+	send_command('unbind ^f11')
+	send_command('unbind !f11')
+	send_command('unbind f12')
+	send_command('unbind ^f12')
+	send_command('unbind !f12')
 
 	send_command('unbind ^-')
 	send_command('unbind ^=')
