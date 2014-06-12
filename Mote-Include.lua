@@ -237,7 +237,18 @@ function precast(spell, action)
 	-- Init an eventArgs that allows cancelling.
 	local eventArgs = {handled = false, cancel = false}
 
-	-- Call the job file first, if it has a function to handle this.
+	-- Call the global user file first, if present.
+	if user_precast then
+		user_precast(spell, action, spellMap, eventArgs)
+	end
+
+	-- If a cancel is requested, cancel_spell and finish.
+	if eventArgs.cancel then
+		cancel_spell()
+		return
+	end
+
+	-- Call the job file next, if it has a function to handle this.
 	if job_precast then
 		job_precast(spell, action, spellMap, eventArgs)
 	end

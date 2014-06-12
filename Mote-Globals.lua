@@ -90,6 +90,13 @@ end
 -------------------------------------------------------------------------------------------------------------------
 
 -- Global intercept on user status change.
+function user_precast(spell, action, spellMap, eventArgs)
+	cancel_conflicting_buffs(spell, action, spellMap, eventArgs)
+	refine_waltz(spell, action, spellMap, eventArgs)
+end
+
+
+-- Global intercept on user status change.
 function user_status_change(newStatus, oldStatus, eventArgs)
 
 end
