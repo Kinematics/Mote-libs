@@ -197,348 +197,200 @@ init_include()
 -- Each job can override any amount of these general functions using job_xxx() hooks.
 -------------------------------------------------------------------------------------------------------------------
 
--- Pretarget is called when GearSwap intercepts the original text input, but
--- before the game has done any processing on it.  In particular, it hasn't
--- initiated target selection for <st*> target types.
--- This is the only function where it will be valid to use change_target().
-function pretarget(spell,action)
-	-- Get the spell mapping, since we'll be passing it to various functions and checks.
-	local spellMap = get_spell_map(spell)
+------------------------------------------------------------------------
+-- Generic function to map a set processing order to all action events.
+------------------------------------------------------------------------
 
+function handle_actions(spell, action)
 	-- Init an eventArgs that allows cancelling.
 	local eventArgs = {handled = false, cancel = false}
 
-	-- Call the job file first, if it has a function to handle this.
-	if job_pretarget then
-		job_pretarget(spell, action, spellMap, eventArgs)
+	-- Get the spell mapping, since we'll be passing it to various functions and checks.
+	local spellMap = get_spell_map(spell)
+
+	-- General filter checks to see whether this function should be run.
+	-- If eventArgs.cancel is set, cancels this function, not the spell.
+	if _G['filter_'..action] then
+		_G['filter_'..action](spell, spellMap, eventArgs)
+
+		if eventArgs.cancel then
+			return
+		end
 	end
 
-	-- If a cancel is requested, cancel_spell and finish.
-	if eventArgs.cancel then
-		cancel_spell()
-		return
+	-- Global user handling of this action
+	if _G['user_'..action] then
+		_G['user_'..action](spell, spellMap, eventArgs)
+		
+		if eventArgs.cancel then
+			cancel_spell()
+			return
+		end
+	end
+	
+	-- Job-specific handling of this action
+	if not eventArgs.handled and _G['job_'..action] then
+		_G['job_'..action](spell, spellMap, eventArgs)
+		
+		if eventArgs.cancel then
+			cancel_spell()
+			return
+		end
 	end
 
-	-- If the job didn't handle things themselves, continue.
-	if not eventArgs.handled then
-		-- Handle optional target conversion.
-		auto_change_target(spell, action, spellMap)
+	-- Default handling of this action
+	if not eventArgs.handled and _G['default_'..action] then
+		_G['default_'..action](spell, spellMap, eventArgs)
+	end
+	
+	-- Job-specific post-handling of this action
+	if _G['job_post_'..action] then
+		_G['job_post_'..action](spell, spellMap, eventArgs)
+	end
+
+	-- Cleanup once this action is done
+	if _G['cleanup_'..action] then
+		_G['cleanup_'..action](spell, spellMap, eventArgs)
 	end
 end
 
+--------------------------------------
+-- Action hooks called by GearSwap.
+--------------------------------------
 
--- Called after the text command has been processed (and target selected), but
--- before the packet gets pushed out.
--- Equip any gear that should be on before the spell or ability is used.
-function precast(spell, action)
-	-- Get the spell mapping, since we'll be passing it to various functions and checks.
-	local spellMap = get_spell_map(spell)
+function pretarget(spell)
+	handle_actions(spell, 'pretarget')
+end
 
-	-- Init an eventArgs that allows cancelling.
-	local eventArgs = {handled = false, cancel = false}
+function precast(spell)
+	handle_actions(spell, 'precast')
+end
 
-	-- Call the global user file first, if present.
-	if user_precast then
-		user_precast(spell, action, spellMap, eventArgs)
+function midcast(spell)
+	handle_actions(spell, 'midcast')
+end
+
+function aftercast(spell)
+	handle_actions(spell, 'aftercast')
+end
+
+function pet_midcast(spell)
+	handle_actions(spell, 'pet_midcast')
+end
+
+function pet_aftercast(spell)
+	handle_actions(spell, 'pet_aftercast')
+end
+
+--------------------------------------
+-- Default code for each action.
+--------------------------------------
+
+function default_pretarget(spell, spellMap, eventArgs)
+	auto_change_target(spell, spellMap)
+end
+
+function default_precast(spell, spellMap, eventArgs)
+	equip(get_default_precast_set(spell, spellMap))
+end
+
+function default_midcast(spell, spellMap, eventArgs)
+	equip(get_default_midcast_set(spell, spellMap))
+end
+
+function default_aftercast(spell, spellMap, eventArgs)
+	if not pet_midaction() then
+		if spell.interrupted then
+			-- Wait a half-second to update so that aftercast equip will actually be worn.
+			send_command('wait 0.5;gs c update')
+		else
+			handle_equipping_gear(player.status)
+		end
 	end
+end
 
-	-- If a cancel is requested, cancel_spell and finish.
-	if eventArgs.cancel then
-		cancel_spell()
-		return
+function default_pet_midcast(spell, spellMap, eventArgs)
+	equip(get_default_pet_midcast_set(spell, action, spellMap, eventArgs))
+end
+
+function default_pet_aftercast(spell, spellMap, eventArgs)
+	handle_equipping_gear(player.status, pet.status)
+end
+
+--------------------------------------
+-- Filters for each action.
+--------------------------------------
+
+function filter_midcast(spell, spellMap, eventArgs)
+	if mote_flags.show_set == 'precast' then
+		eventArgs.cancel = true
 	end
+end
 
-	-- Call the job file next, if it has a function to handle this.
-	if job_precast then
-		job_precast(spell, action, spellMap, eventArgs)
+function filter_aftercast(spell, spellMap, eventArgs)
+	if mote_flags.show_set == 'precast' or mote_flags.show_set == 'midcast' or mote_flags.show_set == 'pet_midcast' then
+		if not pet_midaction() then
+			reset_transitory_classes()
+		end
+		eventArgs.cancel = true
+	elseif spell.name == 'Unknown Interrupt' then
+		eventArgs.cancel = true
 	end
+end
 
-	-- If a cancel is requested, cancel_spell and finish.
-	if eventArgs.cancel then
-		cancel_spell()
-		return
+function filter_pet_midcast(spell, spellMap, eventArgs)
+	-- If we have show_set active for precast or midcast, don't try to equip pet midcast gear.
+	if mote_flags.show_set == 'precast' or mote_flags.show_set == 'midcast' then
+		add_to_chat(104, 'Show Sets: Pet midcast not equipped.')
+		eventArgs.cancel = true
 	end
+end
 
-	-- Equip default precast gear if the job didn't mark this as handled.
-	if not eventArgs.handled then
-		equip(get_default_precast_set(spell, action, spellMap, eventArgs))
+function filter_pet_aftercast(spell, spellMap, eventArgs)
+	-- If show_set is flagged for precast or midcast, don't try to equip aftercast gear.
+	if mote_flags.show_set == 'precast' or mote_flags.show_set == 'midcast' or mote_flags.show_set == 'pet_midcast' then
+		reset_transitory_classes()
+		eventArgs.cancel = true
 	end
+end
 
-	-- Allow the job to add additional gear on top of the default set.
-	if job_post_precast then
-		job_post_precast(spell, action, spellMap, eventArgs)
-	end
+--------------------------------------
+-- Cleanup code for each action.
+--------------------------------------
 
+function cleanup_precast(spell, spellMap, eventArgs)
 	-- If show_set is flagged for precast, notify that we won't try to equip later gear.
 	if mote_flags.show_set == 'precast' then
 		add_to_chat(104, 'Show Sets: Stopping at precast.')
 	end
 end
 
-
--- Called immediately after precast() so that we can build the midcast gear set which
--- will be sent out at the same time (packet contains precastgear:action:midcastgear).
--- Midcast gear selected should be for potency, recast, etc.  It should take effect
--- regardless of the spell cast speed.
-function midcast(spell,action)
-	-- If show_set is flagged for precast, don't try to equip midcast gear.
-	if mote_flags.show_set == 'precast' then
-		return
-	end
-
-	-- Get the spell mapping, since we'll be passing it to various functions and checks.
-	local spellMap = get_spell_map(spell)
-
-	-- Init a new eventArgs
-	local eventArgs = {handled = false}
-
-	-- Call the job file first, if it has a function to handle this.
-	if job_midcast then
-		job_midcast(spell, action, spellMap, eventArgs)
-	end
-
-	-- Equip default midcast gear if the job didn't mark this as handled.
-	if not eventArgs.handled then
-		equip(get_default_midcast_set(spell, action, spellMap, eventArgs))
-	end
-
-	-- Allow the job to add additional gear on top of the default set.
-	if job_post_midcast then
-		job_post_midcast(spell, action, spellMap, eventArgs)
-	end
-
-	-- If show_set is flagged for midcast, notify that we won't try to equip later gear.
+function cleanup_midcast(spell, spellMap, eventArgs)
+	-- If show_set is flagged for precast, notify that we won't try to equip later gear.
 	if mote_flags.show_set == 'midcast' then
 		add_to_chat(104, 'Show Sets: Stopping at midcast.')
 	end
 end
 
-
--- Called when an action has been completed (ie: spell finished casting, weaponskill
--- did damage, spell was interrupted, etc).
-function aftercast(spell,action)
-	-- If show_set is flagged for precast or midcast, don't try to equip aftercast gear.
-	if mote_flags.show_set == 'precast' or mote_flags.show_set == 'midcast' or mote_flags.show_set == 'pet_midcast' then
-		if not pet_midaction() then
-			reset_transitory_classes()
-		end
-		return
-	end
-
-	-- Ignore the Unknown Interrupt
-	if spell.name == 'Unknown Interrupt' then
-		--add_to_chat(123, 'aftercast trace: Unknown Interrupt.  interrupted='..tostring(spell.interrupted))
-		return
-	end
-
-	-- Get the spell mapping, since we'll be passing it to various functions and checks.
-	local spellMap = get_spell_map(spell)
-
-	-- Init a new eventArgs
-	local eventArgs = {handled = false}
-
-	-- Call the job file first, if it has a function to handle this.
-	if job_aftercast then
-		job_aftercast(spell, action, spellMap, eventArgs)
-	end
-
-	-- Handle equipping default gear if the job didn't mark this as handled, and
-	-- if the pet isn't in mid-action (thus triggering calls to pet_midcast before
-	-- this and pet_aftercast after this).
-	if not eventArgs.handled and not pet_midaction() then
-		if spell.interrupted then
-			-- Wait a half-second to update so that aftercast equip will actually be worn.
-			send_command('wait 0.6;gs c update')
-		else
-			handle_equipping_gear(player.status)
-		end
-	end
-
-	-- Allow the job to take additional actions after the default gear handling.
-	if job_post_aftercast then
-		job_post_aftercast(spell, action, spellMap, eventArgs)
-	end
-
-	-- Reset after all possible precast/midcast/aftercast/job-specific usage of the value,
-	-- if we're not in the middle of a pet action.  If so, pet_aftercast will handle
-	-- clearing it.
+function cleanup_aftercast(spell, spellMap, eventArgs)
+	-- Reset custom class after all possible precast/midcast/aftercast/job-specific usage of the value,
+	-- if we're not in the middle of a pet action.  If so, pet_aftercast will handle clearing it.
 	if not pet_midaction() then
 		reset_transitory_classes()
 	end
 end
 
-
--- Called when the pet readies an action.
-function pet_midcast(spell,action)
-	-- If we have show_set active for precast or midcast, don't try to equip pet midcast gear.
-	if mote_flags.show_set == 'precast' or mote_flags.show_set == 'midcast' then
-		add_to_chat(104, 'Show Sets: Pet midcast not equipped.')
-		return
-	end
-
-	-- Get the spell mapping, since we'll be passing it to various functions and checks.
-	local spellMap = get_spell_map(spell)
-
-	-- Init a new eventArgs
-	local eventArgs = {handled = false}
-
-	-- Call the job file first, if it has a function to handle this.
-	if job_pet_midcast then
-		job_pet_midcast(spell, action, spellMap, eventArgs)
-	end
-
-	-- Perform default equips if the job didn't handle it.
-	if not eventArgs.handled then
-		equip(get_default_pet_midcast_set(spell, action, spellMap, eventArgs))
-	end
-
-	-- Allow the job to add additional gear on top of the default set.
-	if job_post_pet_midcast then
-		job_post_pet_midcast(spell, action, spellMap, eventArgs)
-	end
-
+function cleanup_pet_midcast(spell, spellMap, eventArgs)
 	-- If show_set is flagged for pet midcast, notify that we won't try to equip later gear.
 	if mote_flags.show_set == 'pet_midcast' then
 		add_to_chat(104, 'Show Sets: Stopping at pet midcast.')
 	end
 end
 
-
--- Called when the pet's action is complete.
-function pet_aftercast(spell,action)
-	-- If show_set is flagged for precast or midcast, don't try to equip aftercast gear.
-	if mote_flags.show_set == 'precast' or mote_flags.show_set == 'midcast' or mote_flags.show_set == 'pet_midcast' then
-		reset_transitory_classes()
-		return
-	end
-
-	-- Get the spell mapping, since we'll be passing it to various functions and checks.
-	local spellMap = get_spell_map(spell)
-
-	-- Init a new eventArgs
-	local eventArgs = {handled = false}
-
-	-- Call the job file first, if it has a function to handle this.
-	if job_pet_aftercast then
-		job_pet_aftercast(spell, action, spellMap, eventArgs)
-	end
-
-	if not eventArgs.handled then
-		if spell.interrupted then
-			-- Wait a half-second to update so that aftercast equip will actually be worn.
-			send_command('wait 0.6;gs c update')
-		else
-			handle_equipping_gear(player.status)
-		end
-	end
-
-	-- Allow the job to take additional actions after the default gear handling.
-	if job_post_pet_aftercast then
-		job_post_pet_aftercast(spell, action, spellMap, eventArgs)
-	end
-
-	-- Reset after all possible precast/midcast/aftercast/job-specific usage of the value.
+function cleanup_pet_aftercast(spell, spellMap, eventArgs)
+	-- Reset custom classes after all possible precast/midcast/aftercast/job-specific usage of the value.
 	reset_transitory_classes()
 end
-
-
--------------------------------------------------------------------------------------------------------------------
--- Hooks for non-action events.
--------------------------------------------------------------------------------------------------------------------
-
--- Called when the player's subjob changes.
-function sub_job_change(newSubjob, oldSubjob)
-	if user_setup then
-		user_setup()
-	end
-	
-	if job_sub_job_change then
-		job_sub_job_change(newSubjob, oldSubjob)
-	end
-end
-
-
-
--- Called when the player's status changes.
-function status_change(newStatus, oldStatus)
-	-- init a new eventArgs
-	local eventArgs = {handled = false}
-
-	-- Allow jobs to handle status change events.
-	if job_status_change then
-		job_status_change(newStatus, oldStatus, eventArgs)
-	end
-
-	-- Allow a global function (ie: UserGlobals.lua) to be called on status change,
-	-- if the individual job didn't mark it as handled.
-	if not eventArgs.handled then
-		if user_status_change then
-			user_status_change(newStatus, oldStatus, eventArgs)
-		end
-	end
-
-	-- Handle equipping default gear if the job didn't mark this as handled.
-	if not eventArgs.handled then
-		handle_equipping_gear(newStatus)
-	end
-end
-
-
--- Called when a player gains or loses a buff.
--- buff == buff gained or lost
--- gain == true if the buff was gained, false if it was lost.
-function buff_change(buff, gain)
-	-- Init a new eventArgs
-	local eventArgs = {handled = false}
-
-	-- Allow jobs to handle buff change events.
-	if job_buff_change then
-		job_buff_change(buff, gain, eventArgs)
-	end
-
-	-- Allow a global function (ie: UserGlobals.lua) to be called on buff change,
-	-- if the individual job didn't mark it as handled.
-	if not eventArgs.handled then
-		if user_buff_change then
-			user_buff_change(buff, gain, eventArgs)
-		end
-	end
-end
-
-
--- Called when a player gains or loses a pet.
--- pet == pet gained or lost
--- gain == true if the pet was gained, false if it was lost.
-function pet_change(pet, gain)
-	-- Init a new eventArgs
-	local eventArgs = {handled = false}
-
-	-- Allow jobs to handle pet change events.
-	if job_pet_change then
-		job_pet_change(pet, gain, eventArgs)
-	end
-
-	-- Equip default gear if not handled by the job.
-	if not eventArgs.handled then
-		handle_equipping_gear(player.status)
-	end
-end
-
-
--- Called when the player's pet's status changes.
--- Note that this is also called after pet_change when the pet is released.
--- As such, don't automatically handle gear equips.  Only do so if directed
--- to do so by the job.
-function pet_status_change(newStatus, oldStatus)
-	-- Init a new eventArgs
-	local eventArgs = {handled = false}
-
-	-- Allow jobs to override this code
-	if job_pet_status_change then
-		job_pet_status_change(newStatus, oldStatus, eventArgs)
-	end
-end
-
 
 -------------------------------------------------------------------------------------------------------------------
 -- Generalized functions for selecting and equipping gear sets.
@@ -944,6 +796,106 @@ function get_current_resting_set()
 
 	return restingSet
 end
+
+
+
+-------------------------------------------------------------------------------------------------------------------
+-- Hooks for non-action events.
+-------------------------------------------------------------------------------------------------------------------
+
+-- Called when the player's subjob changes.
+function sub_job_change(newSubjob, oldSubjob)
+	if user_setup then
+		user_setup()
+	end
+	
+	if job_sub_job_change then
+		job_sub_job_change(newSubjob, oldSubjob)
+	end
+end
+
+
+
+-- Called when the player's status changes.
+function status_change(newStatus, oldStatus)
+	-- init a new eventArgs
+	local eventArgs = {handled = false}
+
+	-- Allow jobs to handle status change events.
+	if job_status_change then
+		job_status_change(newStatus, oldStatus, eventArgs)
+	end
+
+	-- Allow a global function (ie: UserGlobals.lua) to be called on status change,
+	-- if the individual job didn't mark it as handled.
+	if not eventArgs.handled then
+		if user_status_change then
+			user_status_change(newStatus, oldStatus, eventArgs)
+		end
+	end
+
+	-- Handle equipping default gear if the job didn't mark this as handled.
+	if not eventArgs.handled then
+		handle_equipping_gear(newStatus)
+	end
+end
+
+
+-- Called when a player gains or loses a buff.
+-- buff == buff gained or lost
+-- gain == true if the buff was gained, false if it was lost.
+function buff_change(buff, gain)
+	-- Init a new eventArgs
+	local eventArgs = {handled = false}
+
+	-- Allow jobs to handle buff change events.
+	if job_buff_change then
+		job_buff_change(buff, gain, eventArgs)
+	end
+
+	-- Allow a global function (ie: UserGlobals.lua) to be called on buff change,
+	-- if the individual job didn't mark it as handled.
+	if not eventArgs.handled then
+		if user_buff_change then
+			user_buff_change(buff, gain, eventArgs)
+		end
+	end
+end
+
+
+-- Called when a player gains or loses a pet.
+-- pet == pet gained or lost
+-- gain == true if the pet was gained, false if it was lost.
+function pet_change(pet, gain)
+	-- Init a new eventArgs
+	local eventArgs = {handled = false}
+
+	-- Allow jobs to handle pet change events.
+	if job_pet_change then
+		job_pet_change(pet, gain, eventArgs)
+	end
+
+	-- Equip default gear if not handled by the job.
+	if not eventArgs.handled then
+		handle_equipping_gear(player.status)
+	end
+end
+
+
+-- Called when the player's pet's status changes.
+-- Note that this is also called after pet_change when the pet is released.
+-- As such, don't automatically handle gear equips.  Only do so if directed
+-- to do so by the job.
+function pet_status_change(newStatus, oldStatus)
+	-- Init a new eventArgs
+	local eventArgs = {handled = false}
+
+	-- Allow jobs to override this code
+	if job_pet_status_change then
+		job_pet_status_change(newStatus, oldStatus, eventArgs)
+	end
+end
+
 
 -------------------------------------------------------------------------------------------------------------------
 -- Functions for optional supplemental gear overriding the default sets defined above.
