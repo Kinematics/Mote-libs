@@ -529,7 +529,7 @@ end
 
 -- Attempt to load user gear files in place of default gear sets.
 -- Return true if one exists and was loaded.
-function load_user_gear(job)
+function load_sidecar(job)
 	if not job then return false end
 	
 	-- filename format example for user-local files: whm_gear.lua, or playername_whm_gear.lua
