@@ -273,7 +273,7 @@ end
 
 
 -- Function to allow for automatic adjustment of the spell target type based on preferences.
-function auto_change_target(spell, action, spellMap)
+function auto_change_target(spell, spellMap)
 	-- Don't adjust targetting for explicitly named targets
 	if not spell.target.raw:startswith('<') then
 		return
