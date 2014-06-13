@@ -44,7 +44,7 @@ end
 -------------------------------------------------------------------------------------------------------------------
 
 -- Function to bind GearSwap binds when loading a GS script.
-function binds_on_load()
+function global_on_load()
 	send_command('bind f9 gs c cycle OffenseMode')
 	send_command('bind ^f9 gs c cycle DefenseMode')
 	send_command('bind !f9 gs c cycle WeaponskillMode')
@@ -63,7 +63,7 @@ function binds_on_load()
 end
 
 -- Function to revert binds when unloading.
-function binds_on_unload()
+function global_on_unload()
 	send_command('unbind f9')
 	send_command('unbind ^f9')
 	send_command('unbind !f9')
