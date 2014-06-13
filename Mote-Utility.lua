@@ -616,6 +616,8 @@ end
 
 -- This is a function that can be attached to a registered event for 'time change'.
 -- It will send a call to the update() function if the time period changes.
+-- To use in your job lua, add this line:
+-- windower.register_event('time change', time_change)
 function time_change(new_time, old_time)
 	local was_daytime = classes.Daytime
 	local was_dusktime = classes.DuskToDawn
