@@ -7,7 +7,7 @@
 -- Buff utility functions.
 -------------------------------------------------------------------------------------------------------------------
 
-local cancel_spells_to_check = S{'Sneak', 'Spectral Jig', 'Trance', 'Monomi: Ichi', 'Utsusemi: Ichi'}
+local cancel_spells_to_check = S{'Sneak', 'Stoneskin', 'Spectral Jig', 'Trance', 'Monomi: Ichi', 'Utsusemi: Ichi'}
 local cancel_types_to_check = S{'Waltz', 'Samba'}
 
 -- Function to cancel buffs if they'd conflict with using the spell you're attempting.
