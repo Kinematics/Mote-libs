@@ -44,7 +44,7 @@ end
 -------------------------------------------------------------------------------------------------------------------
 
 -- Function to bind GearSwap binds when loading a GS script.
-function binds_on_load()
+function global_on_load()
 	send_command('bind f9 gs c cycle OffenseMode')
 	send_command('bind ^f9 gs c cycle DefenseMode')
 	send_command('bind !f9 gs c cycle WeaponskillMode')
@@ -63,7 +63,7 @@ function binds_on_load()
 end
 
 -- Function to revert binds when unloading.
-function binds_on_unload()
+function global_on_unload()
 	send_command('unbind f9')
 	send_command('unbind ^f9')
 	send_command('unbind !f9')
@@ -81,24 +81,25 @@ function binds_on_unload()
 	send_command('unbind ^=')
 end
 
-
 -------------------------------------------------------------------------------------------------------------------
 -- Global event-handling functions.
 -------------------------------------------------------------------------------------------------------------------
 
--- Global intercept on user status change.
+-- Global intercept on precast.
 function user_precast(spell, action, spellMap, eventArgs)
 	cancel_conflicting_buffs(spell, action, spellMap, eventArgs)
 	refine_waltz(spell, action, spellMap, eventArgs)
 end
 
-
--- Global intercept on user status change.
-function user_status_change(newStatus, oldStatus, eventArgs)
-
+-- Global intercept on midcast.
+function user_midcast(spell, action, spellMap, eventArgs)
+	-- Default base equipment layer of fast recast.
+	if spell.action_type == 'Magic' and sets.midcast and sets.midcast.FastRecast then
+		equip(sets.midcast.FastRecast)
+	end
 end
 
-
+-- Global intercept on buff change.
 function user_buff_change(buff, gain, eventArgs)
 	-- Create a timer when we gain weakness.  Remove it when weakness is gone.
 	if buff:lower() == 'weakness' then
