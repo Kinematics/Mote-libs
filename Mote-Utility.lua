@@ -1,6 +1,6 @@
 -------------------------------------------------------------------------------------------------------------------
--- General utility functions that can be used by any job files.  Outside the scope of what the main
--- include file deals with.
+-- General utility functions that can be used by any job files.
+-- Outside the scope of what the main include file deals with.
 -------------------------------------------------------------------------------------------------------------------
 
 -------------------------------------------------------------------------------------------------------------------
