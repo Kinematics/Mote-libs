@@ -108,8 +108,8 @@ function init_include()
 
 
 	-- Special control flags.
-	mote_flags = {}
-	mote_flags.show_set = nil
+	mote_vars = {}
+	mote_vars.show_set = nil
 
 	-- Display text mapping.
 	on_off_names = {[true] = 'on', [false] = 'off'}
@@ -345,13 +345,13 @@ end
 --------------------------------------
 
 function filter_midcast(spell, spellMap, eventArgs)
-	if mote_flags.show_set == 'precast' then
+	if mote_vars.show_set == 'precast' then
 		eventArgs.cancel = true
 	end
 end
 
 function filter_aftercast(spell, spellMap, eventArgs)
-	if mote_flags.show_set == 'precast' or mote_flags.show_set == 'midcast' or mote_flags.show_set == 'pet_midcast' then
+	if mote_vars.show_set == 'precast' or mote_vars.show_set == 'midcast' or mote_vars.show_set == 'pet_midcast' then
 		eventArgs.cancel = true
 	elseif spell.name == 'Unknown Interrupt' then
 		eventArgs.cancel = true
@@ -360,7 +360,7 @@ end
 
 function filter_pet_midcast(spell, spellMap, eventArgs)
 	-- If we have show_set active for precast or midcast, don't try to equip pet midcast gear.
-	if mote_flags.show_set == 'precast' or mote_flags.show_set == 'midcast' then
+	if mote_vars.show_set == 'precast' or mote_vars.show_set == 'midcast' then
 		add_to_chat(104, 'Show Sets: Pet midcast not equipped.')
 		eventArgs.cancel = true
 	end
@@ -368,7 +368,7 @@ end
 
 function filter_pet_aftercast(spell, spellMap, eventArgs)
 	-- If show_set is flagged for precast or midcast, don't try to equip aftercast gear.
-	if mote_flags.show_set == 'precast' or mote_flags.show_set == 'midcast' or mote_flags.show_set == 'pet_midcast' then
+	if mote_vars.show_set == 'precast' or mote_vars.show_set == 'midcast' or mote_vars.show_set == 'pet_midcast' then
 		eventArgs.cancel = true
 	end
 end
@@ -379,14 +379,14 @@ end
 
 function cleanup_precast(spell, spellMap, eventArgs)
 	-- If show_set is flagged for precast, notify that we won't try to equip later gear.
-	if mote_flags.show_set == 'precast' then
+	if mote_vars.show_set == 'precast' then
 		add_to_chat(104, 'Show Sets: Stopping at precast.')
 	end
 end
 
 function cleanup_midcast(spell, spellMap, eventArgs)
 	-- If show_set is flagged for midcast, notify that we won't try to equip later gear.
-	if mote_flags.show_set == 'midcast' then
+	if mote_vars.show_set == 'midcast' then
 		add_to_chat(104, 'Show Sets: Stopping at midcast.')
 	end
 end
@@ -401,7 +401,7 @@ end
 
 function cleanup_pet_midcast(spell, spellMap, eventArgs)
 	-- If show_set is flagged for pet midcast, notify that we won't try to equip later gear.
-	if mote_flags.show_set == 'pet_midcast' then
+	if mote_vars.show_set == 'pet_midcast' then
 		add_to_chat(104, 'Show Sets: Stopping at pet midcast.')
 	end
 end
