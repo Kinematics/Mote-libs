@@ -23,7 +23,7 @@
 -- handle cycling the options values on your own, unless you also include
 -- Mote-SelfCommands.
 --
--- The job file must handle the 'update' self-command (gs c update).
+-- The job file must handle the 'update' self-command (gs c update auto).
 -- This is automatically handled if using my includes, but must be ensured
 -- if being used with a user-built job file.
 -- When called, it merely needs to equip standard melee gear for the current
@@ -71,9 +71,7 @@ sets.TreasureHunter = {}
 -- Also displays the current tagged mob table if in debug mode.
 function th_update(cmdParams, eventArgs)
 	if (cmdParams and cmdParams[1] == 'user') or not cmdParams then
-		if player.status == 'Engaged' then
-			TH_for_first_hit()
-		end
+		TH_for_first_hit()
 	
 		if _settings.debug_mode then
 			print_set(info.tagged_mobs, 'Tagged mobs')
@@ -105,20 +103,24 @@ function unlock_TH()
 		slots:append(slot)
 	end
 	enable(slots)
-	send_command('wait 0.1;gs c update auto')
+	send_command('gs c update auto')
 end
 
 
 -- For any active TH mode, if we haven't already tagged this target, equip TH gear and lock slots until we manage to hit it.
 function TH_for_first_hit()
-	if state.TreasureMode == 'None' then
-		unlock_TH()
-	elseif player.target and not info.tagged_mobs[player.target.id] then
-		if _settings.debug_mode then add_to_chat(123,'Prepping for first hit on '..tostring(player.target.id)..'.') end
-		equip(sets.TreasureHunter)
-		lock_TH()
-	elseif state.th_gear_is_locked then
-		if _settings.debug_mode then add_to_chat(123,'Prepping for first hit on '..player.target.id..'.  Target has already been tagged.') end
+	if player.status == 'Engaged' and state.TreasureMode ~= 'None' then
+		if not info.tagged_mobs[player.target.id] then
+			if _settings.debug_mode then add_to_chat(123,'Prepping for first hit on '..tostring(player.target.id)..'.') end
+			equip(sets.TreasureHunter)
+			lock_TH()
+		elseif state.th_gear_is_locked then
+			if _settings.debug_mode then add_to_chat(123,'Target '..player.target.id..' has been tagged.  Unlocking.') end
+			unlock_TH()
+		else
+			if _settings.debug_mode then add_to_chat(123,'Prepping for first hit on '..player.target.id..'.  Target has already been tagged.') end
+		end
+	else
 		unlock_TH()
 	end
 end
