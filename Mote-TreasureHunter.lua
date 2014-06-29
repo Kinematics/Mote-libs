@@ -54,6 +54,7 @@ end
 
 -- Tracking vars for TH.
 info.tagged_mobs = T{}
+info.last_player_target_index = 0
 state.th_gear_is_locked = false
 
 -- Required gear set.  Expand this in the job file when defining sets.
@@ -136,9 +137,11 @@ function on_status_change_for_th(new_status_id, old_status_id)
 
 	if new_status == 'Engaged' then
 		if _settings.debug_mode then add_to_chat(123,'Engaging '..player.target.id..'.') end
+		info.last_player_target_index = player.target.index
 		TH_for_first_hit()
 	elseif old_status == 'Engaged' then
 		if _settings.debug_mode and state.th_gear_is_locked then add_to_chat(123,'Disengaging. Unlocking TH.') end
+		info.last_player_target_index = 0
 		unlock_TH()
 	end
 end
@@ -148,23 +151,13 @@ end
 function on_target_change_for_th(new_index, old_index)
 	-- Only care about changing targets while we're engaged, either manually or via current target death.
 	if player.status == 'Engaged' then
-		-- If  the current player.target is the same as the new_mob then we've actually
-		-- engaged with it, and aren't just getting called due to targetting another
-		-- mob with an ability or the targetting arrow.
-		if player.target.index == new_index then
-			local new_mob = windower.ffxi.get_mob_by_index(new_index)
-			local old_mob = windower.ffxi.get_mob_by_index(old_index)
-	
-			-- If we're switching from a monster to another monster (and not getting called after
-			-- using an ability on another player, for example), then continue.
-			-- spawn_type is a bit field for type of mob.  = 16 means it's a MONSTER
-			if old_mob.spawn_type == 16 and new_mob.spawn_type == 16 then
-				if _settings.debug_mode then add_to_chat(123,'Changing target to '..player.target.id..'.') end
-				TH_for_first_hit()
-				--if handle_equipping_gear then
-				--	handle_equipping_gear(player.status)
-				--end
-			end
+		-- If  the current player.target is the same as the new mob then we're actually
+		-- engaged with it.
+		-- If it's different than the last known mob, then we've actually changed targets.
+		if player.target.index == new_index and new_index ~= info.last_player_target_index then
+			if _settings.debug_mode then add_to_chat(123,'Changing target to '..player.target.id..'.') end
+			info.last_player_target_index = player.target.index
+			TH_for_first_hit()
 		end
 	end
 end
