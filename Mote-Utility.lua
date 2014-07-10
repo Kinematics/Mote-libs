@@ -353,11 +353,7 @@ end
 
 -- Function to get the current weather intensity: 0 for none, 1 for single weather, 2 for double weather.
 function get_weather_intensity()
-	if world.weather_id <= 3 then
-		return 0
-	else
-		return (world.weather_id % 2) + 1
-	end
+	return gearswap.res.weather[world.weather_id].intensity
 end
 
 
