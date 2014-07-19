@@ -1090,8 +1090,12 @@ function display_breadcrumbs(spell, spellMap, action)
 		end
 	end
 
-	if cons and (not action or cons ~= ('sets.' .. action)) then
-		msg = msg .. tostring(cons)
+	if cons then
+		if action and cons == ('sets.' .. action) then
+			msg = msg .. "None"
+		else
+			msg = msg .. tostring(cons)
+		end
 		add_to_chat(123, msg)
 	end
 end
