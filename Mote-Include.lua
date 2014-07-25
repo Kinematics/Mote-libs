@@ -286,6 +286,9 @@ function pretarget(spell)
 end
 
 function precast(spell)
+	if state.Buff[spell.english] ~= nil then
+		state.Buff[spell.english] = true
+	end
 	handle_actions(spell, 'precast')
 end
 
@@ -294,6 +297,9 @@ function midcast(spell)
 end
 
 function aftercast(spell)
+	if state.Buff[spell.english] ~= nil then
+		state.Buff[spell.english] = not spell.interrupted or buffactive[spell.english]
+	end
 	handle_actions(spell, 'aftercast')
 end
 
@@ -1003,6 +1009,10 @@ end
 function buff_change(buff, gain)
 	-- Init a new eventArgs
 	local eventArgs = {handled = false}
+
+	if state.Buff[buff] ~= nil then
+		state.Buff[buff] = gain
+	end
 
 	-- Allow a global function to be called on buff change.
 	if user_buff_change then
