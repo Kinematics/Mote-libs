@@ -197,7 +197,9 @@ init_include()
 -- versions of this function.
 if not file_unload then
 	file_unload = function()
-		if job_file_unload then
+		if user_unload then
+			user_unload()
+		elseif job_file_unload then
 			job_file_unload()
 		end
 		_G[(binds_on_unload and 'binds_on_unload') or 'global_on_unload']()
