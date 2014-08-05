@@ -225,6 +225,10 @@ end
 -- Local   - job_xxx() functions get called next. Define in JOB.lua file.
 -- Default - default_xxx() functions get called next. Defined in this file.
 -- Cleanup - cleanup_xxx() functions always get called before exiting.
+--
+-- Parameters:
+-- spell - standard spell table passed in by GearSwap
+-- action - string defining the function mapping to use (precast, midcast, etc)
 function handle_actions(spell, action)
 	-- Init an eventArgs that allows cancelling.
 	local eventArgs = {handled = false, cancel = false}
