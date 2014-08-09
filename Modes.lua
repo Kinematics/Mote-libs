@@ -76,6 +76,7 @@
 
 _meta = _meta or {}
 _meta.M = {}
+_meta.M.__class = 'mode'
 
 -- Default constructor for mode tables
 -- M{'a', 'b', etc, ['description']='a'} -- defines a mode list, description 'a'
