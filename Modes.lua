@@ -12,14 +12,35 @@
 -- MeleeMode = M(anotherTable) -- Pass in a reference to another table, using parentheses.
 --    Note: The table must have standard numeric indexing.  It cannot use string indexing.
 --
+-- Optional: If a table is passed in, and it contains a key value of 'description', that
+-- description will be saved for future reference.
+-- If a series of strings is passed in, no description will be set.
+--
 -- 2) Create a boolean mode with a default value of false (note parentheses).
 -- UseLuzafRing = M()
 -- UseLuzafRing = M(false)
 -- Create a boolean mode with a default value of true:
 -- UseLuzafRing = M(true)
 --
+-- Optional: A string may be provided that will be used as the mode description:
+-- UseLuzafRing = M('description') -- default value of false
+-- UseLuzafRing = M(false, 'description')
+-- UseLuzafRing = M(true, 'description')
 --
--- Public functions:
+--
+-- Public information fields (all are case-insensitive):
+--
+-- 1) m.description -- Get a text description of the mode table, if it's been set.
+-- 2) m.current -- Gets the current mode value.  Booleans will return the boolean values of true or false.
+-- 3) m.value -- Gets the current mode value.  Booleans will return the strings "on" or "off".
+--
+--
+-- Public information functions:
+--
+-- 1) m:describe(str) -- Sets the description for the mode table to the provided string value.
+--
+--
+-- Public mode manipulation functions:
 --
 -- Assuming a Mode variable 'm':
 --
@@ -29,8 +50,6 @@
 -- 4) m:set(n) -- Sets the current mode value to n.
 --    Note: If m is boolean, n can be boolean true/false, or strings of on/off/true/false.
 -- 5) m:reset() -- Returns the mode var to its default state.
--- 6) m.current -- Gets the current mode value.  Booleans will return the boolean values of true or false.
--- 7) m.value -- Gets the current mode value.  Booleans will return the strings "on" or "off".
 --
 -- All public functions return the current value after completion.
 --
@@ -41,7 +60,7 @@
 -- sets.MeleeMode.Acc = {}
 -- sets.MeleeMode.Att = {}
 --
--- MeleeMode = M{'Normal', 'Acc', 'Att'}
+-- MeleeMode = M{'Normal', 'Acc', 'Att', ['description']='Melee Mode'}
 -- MeleeMode:cycle()
 -- equip(sets.engaged[MeleeMode.current])
 --
@@ -54,10 +73,19 @@
 -- equip(sets.precast['Phantom Roll'], sets.LuzafRing[UseLuzafRing.value])
 -------------------------------------------------------------------------------------------------------------------
 
+
 _meta = _meta or {}
 _meta.M = {}
 
 -- Default constructor for mode tables
+-- M{'a', 'b', etc, ['description']='a'} -- defines a mode list, description 'a'
+-- M('a', 'b', etc) -- defines a mode list, no description
+-- M() -- defines a mode boolean, default false, no description
+-- M(false) -- defines a mode boolean, default false, no description
+-- M(true) -- defines a mode boolean, default true, no description
+-- M('a') -- defines a mode boolean, default false, description 'a'
+-- M(false, 'a') -- defines a mode boolean, default false, description 'a'
+-- M(true, 'a') -- defines a mode boolean, default true, description 'a'
 function M(t, ...)
     local m = {}
     m._track = {}
@@ -73,12 +101,16 @@ function M(t, ...)
 	end
 
 	-- Construct the table that we'll be added the metadata to
-	if type(t) == 'table' and #t > 0 then
+	if type(t) == 'table' and #t > 1 then
 		m._track._type = 'list'
 		
 		-- Only copy numerically indexed values
 	    for ind, val in ipairs(t) do
 	        m[ind] = val
+	    end
+	    
+	    if t['description'] then
+	    	m._track._description = t['description']
 	    end
 
 	    m._track._invert = {}
@@ -89,14 +121,14 @@ function M(t, ...)
 	    end
 
 		m._track._default = 1
-	elseif type(t) == 'boolean' or t == nil or #t == 0 then
+	elseif type(t) == 'boolean' or t == nil then
 		m._track._type = 'boolean'
-		
-		if t then
-			m._track._default = true
-		else
-			m._track._default = false
-		end
+		m._track._default = t or false
+    	m._track._description = args[1]
+	elseif type(t)=='string' and #args == 0 then
+		m._track._type = 'boolean'
+		m._track._default = false
+    	m._track._description = t
 	else
 		-- Construction failure
 		error("Unable to construct a mode table with the provided parameters.", 2)
@@ -126,6 +158,8 @@ _meta.M.__index = function(m, k)
 			else
 				return m[m._track._current]
 			end
+		elseif lk == 'description' then
+			return m._track._description
 		else
 			return _meta.M.__methods[k]
 		end
@@ -135,8 +169,12 @@ end
 -- Tostring handler for printing out the table and its current state.
 _meta.M.__tostring = function(m)
     local res = ''
+    if m._track._description then
+    	res = res .. m._track._description .. ': '
+    end
+
 	if m._track._type == 'list' then
-	    res = '{'
+	    res = res .. '{'
 	    for k,v in ipairs(m) do
 	        res = res..tostring(v)
 	        if m[k+1] ~= nil then
@@ -145,7 +183,7 @@ _meta.M.__tostring = function(m)
 	    end
 	    res = res..'}' 
 	else
-		res = 'Boolean'
+		res = res .. 'Boolean'
 	end
 	
     res = res .. ' ('..tostring(m.Current).. ')'
@@ -155,7 +193,6 @@ _meta.M.__tostring = function(m)
 
     return res
 end
-
 
 
 -- Public methods
@@ -240,4 +277,12 @@ _meta.M.__methods['reset'] = function(m)
 	return m.Current
 end
 
+-- Function to set the table's description.
+_meta.M.__methods['describe'] = function(m, str)
+	if type(str) == 'string' then
+    	m._track._description = str
+    else
+    	error("Invalid argument type: " .. type(str), 2)
+	end
+end
 
