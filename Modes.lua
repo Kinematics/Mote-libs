@@ -161,7 +161,7 @@ _meta.M.__index = function(m, k)
 		elseif lk == 'description' then
 			return m._track._description
 		else
-			return _meta.M.__methods[k]
+			return _meta.M.__methods[lk]
 		end
 	end
 end
