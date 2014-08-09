@@ -2,17 +2,20 @@
 -- This include library allows use of specially-designed tables for tracking
 -- certain types of modes and state.
 --
+-- Usage: include('Modes.lua')
+--
 -- Construction syntax:
 --
--- 1) Create a new list of mode values (the first value will always be the default):
--- MeleeMode = M{'Normal', 'Acc', 'Att'} -- Pass in a table, using braces
--- MeleeMode = M('Normal', 'Acc', 'Att') -- Pass in a list of strings, using parentheses
--- MeleeMode = M(anotherTable) -- Pass in a reference to another table, using parentheses
+-- 1) Create a new list of mode values. The first value will always be the default.
+-- MeleeMode = M{'Normal', 'Acc', 'Att'} -- Pass in a basic table, using braces.
+-- MeleeMode = M('Normal', 'Acc', 'Att') -- Pass in a list of strings, using parentheses.
+-- MeleeMode = M(anotherTable) -- Pass in a reference to another table, using parentheses.
+--    Note: The table must have standard numeric indexing.  It cannot use string indexing.
 --
--- 2) Create a boolean toggle mode with a default value of false (note parentheses):
+-- 2) Create a boolean mode with a default value of false (note parentheses).
 -- UseLuzafRing = M()
 -- UseLuzafRing = M(false)
--- Create a boolean toggle mode with a default value of true:
+-- Create a boolean mode with a default value of true:
 -- UseLuzafRing = M(true)
 --
 --
@@ -24,10 +27,11 @@
 -- 2) m:cycleback() -- Cycles through the list going backwards.  Acts as a toggle on boolean mode vars.
 -- 3) m:toggle() -- Toggles a boolean Mode between true and false.
 -- 4) m:set(n) -- Sets the current mode value to n.
+--    Note: If m is boolean, n can be boolean true/false, or strings of on/off/true/false.
 -- 5) m:reset() -- Returns the mode var to its default state.
 -- 6) m.current, m.value -- Gets the current mode value (current/value field is case-insensitive).
 --
--- All functions return the current value after completion.
+-- All public functions return the current value after completion.
 -------------------------------------------------------------------------------------------------------------------
 
 _meta = _meta or {}
@@ -75,7 +79,7 @@ function M(t, ...)
 		end
 	else
 		-- Construction failure
-		return nil
+		error("Unable to construct a mode table with the provided parameters.", 2)
 	end
 
     m._track._current = m._track._default
@@ -162,7 +166,7 @@ _meta.M.__methods['toggle'] = function(m)
 	if m._track._type == 'boolean' then
 		m._track._current = not m._track._current
 	else
-		error("Cannot toggle a list mode.")
+		error("Cannot toggle a list mode.", 2)
 	end
 
 	return m.Current
@@ -179,12 +183,28 @@ _meta.M.__methods['set'] = function(m, val)
 			elseif val == 'off' or val == 'false' then
 				m._track._current = false
 			else
-				error("Unrecognized value: "..val)
+				error("Unrecognized value: "..val, 2)
 			end
 		else
-			error("Unrecognized value type: "..type(val))
+			error("Unrecognized value type: "..type(val), 2)
 		end
 	else
+		if m._track._invert[val] then
+			m._track._current = m._track._invert[val]
+		else
+			local found = false
+		    for v, ind in pairs(m._track._invert) do
+		    	if val:lower() == v:lower() then
+					m._track._current = ind
+					found = true
+					break
+		    	end
+		    end
+		    
+		    if not found then
+		    	error("Unknown mode value: " .. tostring(val), 2)
+		    end
+		end
 	end
 
 	return m.Current
