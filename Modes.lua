@@ -125,10 +125,12 @@ function M(t, ...)
 		m._track._type = 'boolean'
 		m._track._default = t or false
     	m._track._description = args[1]
+	    m._track._count = 2
 	elseif type(t)=='string' and #args == 0 then
 		m._track._type = 'boolean'
 		m._track._default = false
     	m._track._description = t
+	    m._track._count = 2
 	else
 		-- Construction failure
 		error("Unable to construct a mode table with the provided parameters.", 2)
@@ -193,6 +195,10 @@ _meta.M.__tostring = function(m)
     return res
 end
 
+-- Length handler for the # value lookup.
+_meta.M.__len = function(m)
+	return m._track._count
+end
 
 
 --------------------------------------------------------------------------
