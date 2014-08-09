@@ -143,9 +143,10 @@ function M(t, ...)
     return setmetatable(m, _meta.M)
 end
 
-
+--------------------------------------------------------------------------
 -- Metamethods
 -- Functions that will be used as metamethods for the class
+--------------------------------------------------------------------------
 
 -- Handler for __index when trying to access the current mode value.
 -- Handles indexing 'current' or 'value' keys.
@@ -193,8 +194,11 @@ _meta.M.__tostring = function(m)
 end
 
 
+
+--------------------------------------------------------------------------
 -- Public methods
 -- Functions that will be used as public methods for the class
+--------------------------------------------------------------------------
 
 _meta.M.__methods = {}
 
