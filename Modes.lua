@@ -151,7 +151,7 @@ _meta.M.__tostring = function(m)
     res = res .. ' ('..tostring(m.Current).. ')'
     
     -- Debug addition
-    res = res .. ' [' .. m._track._type .. '/' .. tostring(m._track._current) .. ']'
+    --res = res .. ' [' .. m._track._type .. '/' .. tostring(m._track._current) .. ']'
 
     return res
 end
