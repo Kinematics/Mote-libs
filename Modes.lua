@@ -134,6 +134,10 @@ function M(t, ...)
 		error("Unable to construct a mode table with the provided parameters.", 2)
 	end
 
+	-- Text lookups for bool values
+	m[true] = 'on'
+	m[false] = 'off'
+
     m._track._current = m._track._default
 
     return setmetatable(m, _meta.M)
@@ -148,18 +152,12 @@ end
 _meta.M.__index = function(m, k)
 	if type(k) == 'string' then
 		local lk = k:lower()
-		if lk == 'current' or lk == 'value' then
-			if m._track._type == 'boolean' then
-				if lk == 'value' then
-					return m._track._current and 'on' or 'off'
-				else
-					return m._track._current
-				end
-			else
-				return m[m._track._current]
-			end
-		elseif lk == 'description' then
-			return m._track._description
+		if lk == 'current' and m._track._type == 'boolean' then
+			return m._track._current
+		elseif lk == 'current' or lk == 'value' then
+			return m[m._track._current]
+		elseif m._track['_'..lk] then
+			return m._track['_'..lk]
 		else
 			return _meta.M.__methods[lk]
 		end
