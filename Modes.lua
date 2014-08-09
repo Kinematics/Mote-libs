@@ -30,8 +30,6 @@
 -- All functions return the current value after completion.
 -------------------------------------------------------------------------------------------------------------------
 
-mode = {}
-
 _meta = _meta or {}
 _meta.M = {}
 
@@ -91,7 +89,7 @@ end
 
 -- Handler for __index when trying to access the current mode value.
 -- Handles indexing 'current' or 'value' keys.
-function mode.Index(m, k)
+_meta.M.__index = function(m, k)
 	if type(k) == 'string' then
 		local lk = k:lower()
 		if lk == 'current' or lk == 'value' then
@@ -107,7 +105,7 @@ function mode.Index(m, k)
 end
 
 -- Tostring handler for printing out the table and its current state.
-function mode.tostring(m)
+_meta.M.__tostring = function(m)
     local res = ''
 	if m._track._type == 'list' then
 	    res = '{'
@@ -135,7 +133,42 @@ end
 -- Public methods
 -- Functions that will be used as public methods for the class
 
-function mode.set(m, val)
+_meta.M.__methods = {}
+
+_meta.M.__methods['cycle'] = function(m)
+	if m._track._type == 'list' then
+		m._track._current = (m._track._current % m._track._count) + 1
+	else
+		m:toggle()
+	end
+	
+	return m.Current
+end
+
+_meta.M.__methods['cycleback'] = function(m)
+	if m._track._type == 'list' then
+		m._track._current = m._track._current - 1
+		if  m._track._current < 1 then
+			m._track._current = m._track._count
+		end
+	else
+		m:toggle()
+	end
+
+	return m.Current
+end
+
+_meta.M.__methods['toggle'] = function(m)
+	if m._track._type == 'boolean' then
+		m._track._current = not m._track._current
+	else
+		error("Cannot toggle a list mode.")
+	end
+
+	return m.Current
+end
+
+_meta.M.__methods['set'] = function(m, val)
 	if m._track._type == 'boolean' then
 		if type(val) == 'boolean' then
 			m._track._current = val
@@ -157,57 +190,10 @@ function mode.set(m, val)
 	return m.Current
 end
 
-function mode.cycle(m)
-	if m._track._type == 'list' then
-		m._track._current = (m._track._current % m._track._count) + 1
-	else
-		m:toggle()
-	end
-	
-	return m.Current
-end
-
-function mode.cycleback(m)
-	if m._track._type == 'list' then
-		m._track._current = m._track._current - 1
-		if  m._track._current < 1 then
-			m._track._current = m._track._count
-		end
-	else
-		m:toggle()
-	end
-
-	return m.Current
-end
-
-function mode.toggle(m)
-	if m._track._type == 'boolean' then
-		m._track._current = not m._track._current
-	else
-		error("Cannot toggle a list mode.")
-	end
-
-	return m.Current
-end
-
-function mode.reset(m)
+_meta.M.__methods['reset'] = function(m)
     m._track._current = m._track._default
 
 	return m.Current
 end
-
-
--- Metamethods
-_meta.M.__index = mode.Index
-_meta.M.__tostring = mode.tostring
---_meta.M.__newindex = function() end -- Don't allow adding new values to the list
-
--- Public methods
-_meta.M.__methods = {}
-_meta.M.__methods['set'] = mode.set
-_meta.M.__methods['cycle'] = mode.cycle
-_meta.M.__methods['cycleback'] = mode.cycleback
-_meta.M.__methods['toggle'] = mode.toggle
-_meta.M.__methods['reset'] = mode.reset
 
 
