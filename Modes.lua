@@ -29,9 +29,29 @@
 -- 4) m:set(n) -- Sets the current mode value to n.
 --    Note: If m is boolean, n can be boolean true/false, or strings of on/off/true/false.
 -- 5) m:reset() -- Returns the mode var to its default state.
--- 6) m.current, m.value -- Gets the current mode value (current/value field is case-insensitive).
+-- 6) m.current -- Gets the current mode value.  Booleans will return the boolean values of true or false.
+-- 7) m.value -- Gets the current mode value.  Booleans will return the strings "on" or "off".
 --
 -- All public functions return the current value after completion.
+--
+--
+-- Example usage:
+--
+-- sets.MeleeMode.Normal = {}
+-- sets.MeleeMode.Acc = {}
+-- sets.MeleeMode.Att = {}
+--
+-- MeleeMode = M{'Normal', 'Acc', 'Att'}
+-- MeleeMode:cycle()
+-- equip(sets.engaged[MeleeMode.current])
+--
+--
+-- sets.LuzafRing.on = {ring2="Luzaf's Ring"}
+-- sets.LuzafRing.off = {}
+--
+-- UseLuzafRing = M(false)
+-- UseLuzafRing:toggle()
+-- equip(sets.precast['Phantom Roll'], sets.LuzafRing[UseLuzafRing.value])
 -------------------------------------------------------------------------------------------------------------------
 
 _meta = _meta or {}
@@ -98,7 +118,11 @@ _meta.M.__index = function(m, k)
 		local lk = k:lower()
 		if lk == 'current' or lk == 'value' then
 			if m._track._type == 'boolean' then
-				return m._track._current
+				if lk == 'value' then
+					return m._track._current and 'on' or 'off'
+				else
+					return m._track._current
+				end
 			else
 				return m[m._track._current]
 			end
