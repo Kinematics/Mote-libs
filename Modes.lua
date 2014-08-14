@@ -47,9 +47,10 @@
 -- 1) m:cycle() -- Cycles through the list going forwards.  Acts as a toggle on boolean mode vars.
 -- 2) m:cycleback() -- Cycles through the list going backwards.  Acts as a toggle on boolean mode vars.
 -- 3) m:toggle() -- Toggles a boolean Mode between true and false.
--- 4) m:set(n) -- Sets the current mode value to n.
+-- 4) m:trigger() -- Sets a boolean Mode to true.
+-- 5) m:set(n) -- Sets the current mode value to n.
 --    Note: If m is boolean, n can be boolean true/false, or strings of on/off/true/false.
--- 5) m:reset() -- Returns the mode var to its default state.
+-- 6) m:reset() -- Returns the mode var to its default state.
 --
 -- All public functions return the current value after completion.
 --
@@ -244,6 +245,19 @@ _meta.M.__methods['toggle'] = function(m)
 
 	return m.Current
 end
+
+
+-- Set a boolean value to true
+_meta.M.__methods['trigger'] = function(m)
+	if m._track._type == 'boolean' then
+		m._track._current = true
+	else
+		error("Cannot trigger a list mode.", 2)
+	end
+
+	return m.Current
+end
+
 
 -- Set the current value
 _meta.M.__methods['set'] = function(m, val)
