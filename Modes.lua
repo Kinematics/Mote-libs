@@ -158,6 +158,8 @@ _meta.M.__index = function(m, k)
 		local lk = k:lower()
 		if lk == 'current' or lk == 'value' then
 			return m[m._track._current]
+		elseif lk == 'default' then
+			return m[m._track._default]
 		elseif lk == 'index' then
 			return m._track._current
 		elseif m._track['_'..lk] then
@@ -328,13 +330,6 @@ _meta.M.__methods['set'] = function(m, val)
 		    end
 		end
 	end
-
-	return m.Current
-end
-
--- Reset to the default value
-_meta.M.__methods['default'] = function(m)
-    m._track._current = m._track._default
 
 	return m.Current
 end
