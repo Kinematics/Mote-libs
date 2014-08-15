@@ -531,6 +531,10 @@ function get_idle_set(petStatus)
 	idleSet = apply_defense(idleSet)
 	idleSet = apply_kiting(idleSet)
 
+	if user_customize_idle_set then
+		idleSet = user_customize_idle_set(idleSet)
+	end
+
 	if customize_idle_set then
 		idleSet = customize_idle_set(idleSet)
 	end
@@ -584,6 +588,10 @@ function get_melee_set()
 
 	if customize_melee_set then
 		meleeSet = customize_melee_set(meleeSet)
+	end
+
+	if user_customize_melee_set then
+		meleeSet = user_customize_melee_set(meleeSet)
 	end
 
 	return meleeSet
