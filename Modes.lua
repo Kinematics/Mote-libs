@@ -250,6 +250,15 @@ _meta.M.__methods['options'] = function(m, ...)
     m._track._current = m._track._default
 end
 
+-- Function to set the table's description.
+_meta.M.__methods['contains'] = function(m, str)
+	if type(str) == 'string' then
+	    return (m._track._invert[str] ~= nil)
+    else
+    	error("Invalid argument type: " .. type(str), 2)
+	end
+end
+
 
 --------------------------------------------------------------------------
 -- Public methods
