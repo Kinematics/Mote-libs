@@ -93,7 +93,7 @@ _meta.M.__methods = {}
 function M(t, ...)
     local m = {}
     m._track = {}
-    m.__class = 'mode'
+    m._class = 'mode'
 
 	-- If we're passed a list of strings, convert them to a table
 	local args = {...}
@@ -163,8 +163,8 @@ _meta.M.__index = function(m, k)
 			return m[m._track._default]
 		elseif lk == 'index' then
 			return m._track._current
-		elseif m._track['_'..lk] then
-			return m._track['_'..lk]
+		elseif m._track[lk] then
+			return m._track[lk]
 		else
 			return _meta.M.__methods[lk]
 		end
