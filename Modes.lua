@@ -93,6 +93,7 @@ _meta.M.__methods = {}
 function M(t, ...)
     local m = {}
     m._track = {}
+    m.__class = 'mode'
 
 	-- If we're passed a list of strings, convert them to a table
 	local args = {...}
