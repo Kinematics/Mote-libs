@@ -276,7 +276,7 @@ function auto_change_target(spell, spellMap)
 	end
 	
 	-- init a new eventArgs with current values
-	local eventArgs = {handled = false, PCTargetMode = state.PCTargetMode, SelectNPCTargets = state.SelectNPCTargets}
+	local eventArgs = {handled = false, PCTargetMode = state.PCTargetMode.value, SelectNPCTargets = state.SelectNPCTargets.value}
 
 	-- Allow the job to do custom handling, or override the default values.
 	-- They can completely handle it, or set one of the secondary eventArgs vars to selectively
