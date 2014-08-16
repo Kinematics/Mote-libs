@@ -26,7 +26,8 @@
 -- Public information fields (all are case-insensitive):
 --
 -- 1) m.description -- Get a text description of the mode table, if it's been set.
--- 2) m.current or m.value -- Gets the current mode value.  Booleans will return the strings "on" or "off".
+-- 2) m.current -- Gets the current mode text value.  Booleans will return the strings "on" or "off".
+-- 3) m.value -- Gets the current mode value.  Booleans will return the boolean values of true or false.
 -- 3) m.index -- Gets the current index value, or true/false for booleans.
 --
 --
@@ -157,12 +158,18 @@ end
 _meta.M.__index = function(m, k)
 	if type(k) == 'string' then
 		local lk = k:lower()
-		if lk == 'current' or lk == 'value' then
+		if lk == 'current' then
 			return m[m._track._current]
-		elseif lk == 'default' then
-			return m[m._track._default]
+		elseif lk == 'value' then
+		    if m._track._type == 'boolean' then
+    	        return m._track._current
+		    else
+    			return m[m._track._current]
+            end
 		elseif lk == 'index' then
 			return m._track._current
+		elseif lk == 'default' then
+			return m[m._track._default]
 		elseif lk == 'description' then
 			return m._track._description
 		elseif m._track[lk] then
