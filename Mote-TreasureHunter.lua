@@ -242,7 +242,7 @@ end
 
 -- Called if we change any user state fields.
 function job_state_change(stateField, newValue, oldValue)
-	if stateField == 'TreasureMode' then
+	if stateField == 'Treasure Mode' then
 		if newValue == 'None' and state.th_gear_is_locked then
 			if _settings.debug_mode then add_to_chat(123,'TH Mode set to None. Unlocking gear.') end
 			unlock_TH()
