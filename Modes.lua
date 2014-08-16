@@ -30,6 +30,8 @@
 -- 3) m.value -- Gets the current mode value.  Booleans will return the boolean values of true or false.
 -- 3) m.index -- Gets the current index value, or true/false for booleans.
 --
+-- Typically use m.current when using the mode to create a set name, and m.value when
+-- testing the mode value in conditional rules.
 --
 -- Public class functions:
 --
