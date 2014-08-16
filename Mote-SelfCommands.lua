@@ -311,7 +311,15 @@ function display_current_state()
     end
 
     if not eventArgs.handled then
-        local msg = 'Melee: '.. state.OffenseMode.value
+        local msg = 'Melee'
+        
+        if state.CombatForm then
+            msg = msg .. ' (' .. state.CombatForm .. ')'
+        end
+        
+        msg = msg .. ': '
+        
+        msg = msg .. state.OffenseMode.value
         if state.HybridMode.value ~= 'Normal' then
             msg = msg .. '/' .. state.HybridMode.value
         end
@@ -340,6 +348,42 @@ function display_current_state()
         add_to_chat(122,'Gear equips are blocked after ['..state.EquipBlock.value..'].  Use "//gs c reset equipstop" to turn it off.')
     end
 end
+
+-- Generic version of this for casters
+function display_current_caster_state()
+    local msg = ''
+    
+    if state.OffenseMode.value ~= 'None' then
+        msg = msg .. 'Melee'
+
+        if state.CombatForm then
+            msg = msg .. ' (' .. state.CombatForm .. ')'
+        end
+        
+        msg = msg .. ', '
+    end
+    
+    msg = msg .. 'Casting ['..state.CastingMode.value..'], Idle ['..state.IdleMode.value..']'
+    
+    if state.DefenseMode.value ~= 'None' then
+        msg = msg .. ', ' .. 'Defense: ' .. state.DefenseMode.value .. ' (' .. state[state.DefenseMode.value .. 'DefenseMode'].value .. ')'
+    end
+    
+    if state.Kiting.value then
+        msg = msg .. ', Kiting'
+    end
+
+    if state.PCTargetMode.value ~= 'default' then
+        msg = msg .. ', Target PC: '..state.PCTargetMode.value
+    end
+
+    if state.SelectNPCTargets.value then
+        msg = msg .. ', Target NPCs'
+    end
+
+    add_to_chat(122, msg)
+end
+
 
 -------------------------------------------------------------------------------------------------------------------
 
