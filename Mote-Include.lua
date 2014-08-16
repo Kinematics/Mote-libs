@@ -99,6 +99,7 @@ function init_include()
 
 	-- Var for tracking misc info
 	info = {}
+	options = {}
 
 	-- Special control flags.
 	mote_vars = {}
