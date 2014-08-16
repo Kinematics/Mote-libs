@@ -133,15 +133,6 @@ function custom_aftermath_timers_aftercast(spell)
 end
 
 
--- Function to reset state.Buff values.
-function reset_buff_states()
-	if state.Buff then
-		for buff,present in pairs(state.Buff) do
-			state.Buff[buff] = buffactive[buff] or false
-		end
-	end
-end
-
 -------------------------------------------------------------------------------------------------------------------
 -- Utility functions for changing spells and target types in an automatic manner.
 -------------------------------------------------------------------------------------------------------------------
