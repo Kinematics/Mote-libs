@@ -163,6 +163,8 @@ _meta.M.__index = function(m, k)
 			return m[m._track._default]
 		elseif lk == 'index' then
 			return m._track._current
+		elseif lk == 'description' then
+			return m._track._description
 		elseif m._track[lk] then
 			return m._track[lk]
 		else
