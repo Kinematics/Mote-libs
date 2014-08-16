@@ -14,6 +14,9 @@
 -- of 'description', that description will be saved for future reference.
 -- If a simple list of strings is passed in, no description will be set.
 --
+-- MeleeMode = M{['description']='Melee Mode', 'Normal', 'Acc', 'Att'}
+--
+--
 -- 2) Create a boolean mode with a specified default value (note parentheses):
 -- UseLuzafRing = M(true)
 -- UseLuzafRing = M(false)
@@ -21,6 +24,14 @@
 -- Optional: A string may be provided that will be used as the mode description:
 -- UseLuzafRing = M(false, 'description')
 -- UseLuzafRing = M(true, 'description')
+--
+--
+-- 3) Create a string mode with a specified default value. Construct with a table:
+-- CombatWeapon = M{['description']='Melee Mode', ['value']='Dagger'}
+-- CombatWeapon = M{['description']='Melee Mode', ['value']=false}
+--
+-- Note: A 'value' of (boolean) false indicates that the initial (default) value
+-- should be nil.
 --
 --
 -- Public information fields (all are case-insensitive):
@@ -96,9 +107,10 @@ _meta.M.__methods = {}
 function M(t, ...)
     local m = {}
     m._track = {}
-    m._class = 'mode'
+    m._track._class = 'mode'
 
-    -- If we're passed a list of strings, convert them to a table
+    -- If we're passed a list of strings (that is, the first element is a string),
+    -- convert them to a table
     local args = {...}
     if type(t) == 'string' then
         t = {[1] = t}
@@ -108,35 +120,51 @@ function M(t, ...)
         end
     end
 
-    -- Construct the table that we'll be added the metadata to
+    -- Construct the table that we'll be adding the metadata to
+    
+    -- If we have a table of values, it's either a list or a string
     if type(t) == 'table' then
-        m._track._type = 'list'
-        m._track._invert = {}
-        m._track._count = 0
-        
+        -- Save the description, if provided
         if t['description'] then
             m._track._description = t['description']
         end
 
-        -- Only copy numerically indexed values
-        for ind, val in ipairs(t) do
-            m[ind] = val
-            m._track._invert[val] = ind
-            m._track._count = ind
-        end
-        
-        if m._track._count == 0 then
-            m[1] = 'Normal'
-            m._track._invert['Normal'] = 1
+        -- If we were given an explicit 'value' field, construct a string mode class.
+        if t.value or t.value == false then
+            m._track._type = 'string'
             m._track._count = 1
-        end
+            m._track._default = 'defaultstring'
 
-        m._track._default = 1
+            if t.value then
+                m['string'] = t.value
+                m['defaultstring'] = t.value
+            end
+        -- Otherwise put together a standard list mode class.
+        else
+            m._track._type = 'list'
+            m._track._invert = {}
+            m._track._count = 0
+            m._track._default = 1
+            
+            -- Only copy numerically indexed values
+            for ind, val in ipairs(t) do
+                m[ind] = val
+                m._track._invert[val] = ind
+                m._track._count = ind
+            end
+            
+            if m._track._count == 0 then
+                m[1] = 'Normal'
+                m._track._invert['Normal'] = 1
+                m._track._count = 1
+            end
+        end
+    -- If the first argument is a bool, construct a boolean mode class.
     elseif type(t) == 'boolean' or t == nil then
         m._track._type = 'boolean'
+        m._track._count = 2
         m._track._default = t or false
         m._track._description = args[1]
-        m._track._count = 2
         -- Text lookups for bool values
         m[true] = 'on'
         m[false] = 'off'
@@ -145,6 +173,7 @@ function M(t, ...)
         error("Unable to construct a mode table with the provided parameters.", 2)
     end
 
+    -- Initialize current value to the default.
     m._track._current = m._track._default
 
     return setmetatable(m, _meta.M)
@@ -168,14 +197,20 @@ _meta.M.__index = function(m, k)
             else
                 return m[m._track._current]
             end
-        elseif lk == 'index' then
-            return m._track._current
         elseif lk == 'default' then
-            return m[m._track._default]
+            if m._track._type == 'boolean' then
+                return m._track._default
+            else
+                return m[m._track._default]
+            end
         elseif lk == 'description' then
             return m._track._description
+        elseif lk == 'index' then
+            return m._track._current
         elseif m._track[lk] then
             return m._track[lk]
+        elseif m._track['_'..lk] then
+            return m._track['_'..lk]
         else
             return _meta.M.__methods[lk]
         end
@@ -198,6 +233,8 @@ _meta.M.__tostring = function(m)
             end
         end
         res = res..'}' 
+    elseif m._track._type == 'string' then
+        res = res .. 'String'
     else
         res = res .. 'Boolean'
     end
@@ -234,8 +271,8 @@ end
 -- Leaves the description intact.
 -- Cannot be used on boolean classes.
 _meta.M.__methods['options'] = function(m, ...)
-    if m._track._type == 'boolean' then
-        error("Cannot revise the options list for a boolean mode class.", 2)
+    if m._track._type ~= 'list' then
+        error("Can only revise the options list for a list mode class.", 2)
     end
 
     local options = {...}
@@ -262,12 +299,17 @@ _meta.M.__methods['options'] = function(m, ...)
     m._track._current = m._track._default
 end
 
--- Function to set the table's description.
+
+-- Function to test whether the list table contains the specified value.
 _meta.M.__methods['contains'] = function(m, str)
-    if type(str) == 'string' then
-        return (m._track._invert[str] ~= nil)
+    if m._track._invert then
+        if type(str) == 'string' then
+            return (m._track._invert[str] ~= nil)
+        else
+            error("Invalid argument type: " .. type(str), 2)
+        end
     else
-        error("Invalid argument type: " .. type(str), 2)
+        error("Cannot test for containment on a " .. m._track._type .. " mode class.", 2)
     end
 end
 
@@ -281,7 +323,7 @@ end
 _meta.M.__methods['cycle'] = function(m)
     if m._track._type == 'list' then
         m._track._current = (m._track._current % m._track._count) + 1
-    else
+    elseif m._track._type == 'boolean' then
         m:toggle()
     end
     
@@ -295,7 +337,7 @@ _meta.M.__methods['cycleback'] = function(m)
         if  m._track._current < 1 then
             m._track._current = m._track._count
         end
-    else
+    elseif m._track._type == 'boolean' then
         m:toggle()
     end
 
@@ -307,7 +349,7 @@ _meta.M.__methods['toggle'] = function(m)
     if m._track._type == 'boolean' then
         m._track._current = not m._track._current
     else
-        error("Cannot toggle a list mode.", 2)
+        error("Can only toggle a boolean mode.", 2)
     end
 
     return m.Current
@@ -333,7 +375,7 @@ _meta.M.__methods['set'] = function(m, val)
         else
             error("Unrecognized value type: "..type(val), 2)
         end
-    else
+    elseif m._track._type == 'list' then
         if m._track._invert[val] then
             m._track._current = m._track._invert[val]
         else
@@ -350,10 +392,33 @@ _meta.M.__methods['set'] = function(m, val)
                 error("Unknown mode value: " .. tostring(val), 2)
             end
         end
+    elseif m._track._type == 'string' then
+        if val == nil or type(val) == 'string' then
+            m._track._current = 'string'
+            m.string = val
+        else
+            error("Unrecognized value type: "..type(val), 2)
+        end
     end
 
     return m.Current
 end
+
+
+-- Forces a boolean mode to false, or a string to an empty string.
+_meta.M.__methods['unset'] = function(m)
+    if m._track._type == 'boolean' then
+        m._track._current = false
+    elseif m._track._type == 'string' then
+        m._track._current = 'string'
+        m.string = ''
+    else
+        error("Cannot unset a list mode class.", 2)
+    end
+
+    return m.Current
+end
+
 
 -- Reset to the default value
 _meta.M.__methods['reset'] = function(m)
@@ -362,13 +427,3 @@ _meta.M.__methods['reset'] = function(m)
     return m.Current
 end
 
--- Forces a boolean mode to false
-_meta.M.__methods['unset'] = function(m)
-    if m._track._type == 'boolean' then
-        m._track._current = false
-    else
-        error("Cannot unset a list mode class.", 2)
-    end
-
-    return m.Current
-end
