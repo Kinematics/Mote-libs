@@ -356,7 +356,7 @@ function display_current_state()
     end
 
     if state.EquipStop.value ~= 'none' then
-        add_to_chat(122,'Gear equips are blocked after ['..state.EquipBlock.value..'].  Use "//gs c reset equipstop" to turn it off.')
+        add_to_chat(122,'Gear equips are blocked after ['..state.EquipStop.value..'].  Use "//gs c reset equipstop" to turn it off.')
     end
 end
 
