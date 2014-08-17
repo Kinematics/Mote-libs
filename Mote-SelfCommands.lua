@@ -80,11 +80,15 @@ function handle_reset(cmdParams)
     end
     
     local state_var = get_state(cmdParams[1])
+
+    local oldVal
+    local newVal
+    local descrip
     
     if state_var then
-        local oldVal = state_var.value
+        oldVal = state_var.value
         state_var:reset()
-        local newVal = state_var.value
+        newVal = state_var.value
         
         local descrip = state_var.description or cmdParams[1]
         if job_state_change then
@@ -96,7 +100,14 @@ function handle_reset(cmdParams)
     elseif cmdParams[1]:lower() == 'all' then
         for k,v in pairs(state) do
             if v._type == 'mode' then
+                oldVal = v.value
                 v:reset()
+                newVal = v.value
+                
+                descrip = state_var.description
+                if descrip and job_state_change then
+                    job_state_change(descrip, newVal, oldVal)
+                end
             end
         end
 
