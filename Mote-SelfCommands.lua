@@ -61,7 +61,13 @@ function handle_set(cmdParams)
             job_state_change(descrip, newVal, oldVal)
         end
 
-        add_to_chat(122,descrip..' is now '..state_var.current..'.')
+        local msg = descrip..' is now '..state_var.current
+        if state_var == state.DefenseMode and newVal ~= 'None' then
+            msg = msg .. ' (' .. state[newVal .. 'DefenseMode'].current .. ')'
+        end
+        msg = msg .. '.'
+        
+        add_to_chat(122, msg)
         handle_update({'auto'})
     else
         add_to_chat(123,'Mote-Libs: Set: Unknown field ['..cmdParams[1]..']')
