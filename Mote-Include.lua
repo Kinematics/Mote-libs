@@ -862,11 +862,7 @@ function apply_defense(baseSet)
 	if state.DefenseMode.current ~= 'None' then
 		local defenseSet = sets.defense
 
-		if state.DefenseMode.value == 'Physical' then
-			defenseSet = sets.defense[state.PhysicalDefenseMode.current] or defenseSet
-		else
-			defenseSet = sets.defense[state.MagicalDefenseMode.current] or defenseSet
-		end
+		defenseSet = sets.defense[state[state.DefenseMode.current .. 'DefenseMode'].current] or defenseSet
 
 		for _,group in ipairs(classes.CustomDefenseGroups) do
 			defenseSet = defenseSet[group] or defenseSet
