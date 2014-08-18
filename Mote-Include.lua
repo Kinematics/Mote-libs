@@ -56,18 +56,18 @@ function init_include()
 	state.PhysicalDefenseMode = M{['description'] = 'Physical Defense Mode', 'PDT'}
 	state.MagicalDefenseMode  = M{['description'] = 'Magical Defense Mode', 'MDT'}
 
-	state.Kiting           = M(false, 'Kiting')
-	state.SelectNPCTargets = M(false, 'Select NPC Targets')
-	state.PCTargetMode     = M{['description'] = 'PC Target Mode', 'default', 'stpt', 'stal', 'stpc'}
+	state.Kiting              = M(false, 'Kiting')
+	state.SelectNPCTargets    = M(false, 'Select NPC Targets')
+	state.PCTargetMode        = M{['description'] = 'PC Target Mode', 'default', 'stpt', 'stal', 'stpc'}
 
-    state.EquipStop        = M{['description'] = 'Stop Equipping Gear', 'none', 'precast', 'midcast', 'pet_midcast'}
+    state.EquipStop           = M{['description'] = 'Stop Equipping Gear', 'none', 'precast', 'midcast', 'pet_midcast'}
+
+	state.CombatWeapon        = M(['description']='Combat Weapon', ['string']='')
+	state.CombatForm          = M(['description']='Combat Form', ['string']='')
 
     -- Non-mode vars that are used for state tracking.
 	state.MaxWeaponskillDistance = 0
-
 	state.Buff = {}
-	state.CombatWeapon = nil
-	state.CombatForm = nil
 
 	-- Classes describe a 'type' of action.  They are similar to state, but
 	-- may have any free-form value, or describe an entire table of mapped values.
@@ -543,14 +543,14 @@ function get_melee_set()
 	mote_vars.set_breadcrumbs:append('sets')
 	mote_vars.set_breadcrumbs:append('engaged')
 
-	if state.CombatForm and meleeSet[state.CombatForm] then
-		meleeSet = meleeSet[state.CombatForm]
-		mote_vars.set_breadcrumbs:append(state.CombatForm)
+	if state.CombatForm.value and meleeSet[state.CombatForm.value] then
+		meleeSet = meleeSet[state.CombatForm.value]
+		mote_vars.set_breadcrumbs:append(state.CombatForm.value)
 	end
 
-	if state.CombatWeapon and meleeSet[state.CombatWeapon] then
-		meleeSet = meleeSet[state.CombatWeapon]
-		mote_vars.set_breadcrumbs:append(state.CombatWeapon)
+	if state.CombatWeapon.value and meleeSet[state.CombatWeapon.value] then
+		meleeSet = meleeSet[state.CombatWeapon.value]
+		mote_vars.set_breadcrumbs:append(state.CombatWeapon.value)
 	end
 
 	if meleeSet[state.OffenseMode.current] then
@@ -824,14 +824,14 @@ end
 -- Function to handle the logic of selecting the proper ranged set.
 function get_ranged_set(equipSet, spell, spellMap)
 	-- Attach Combat Form and Combat Weapon to set checks
-	if state.CombatForm and equipSet[state.CombatForm] then
-		equipSet = equipSet[state.CombatForm]
-		mote_vars.set_breadcrumbs:append(state.CombatForm)
+	if state.CombatForm.value and equipSet[state.CombatForm.value] then
+		equipSet = equipSet[state.CombatForm.value]
+		mote_vars.set_breadcrumbs:append(state.CombatForm.value)
 	end
 
-	if state.CombatWeapon and equipSet[state.CombatWeapon] then
-		equipSet = equipSet[state.CombatWeapon]
-		mote_vars.set_breadcrumbs:append(state.CombatWeapon)
+	if state.CombatWeapon.value and equipSet[state.CombatWeapon.value] then
+		equipSet = equipSet[state.CombatWeapon.value]
+		mote_vars.set_breadcrumbs:append(state.CombatWeapon.value)
 	end
 
 	-- Check for specific mode for ranged attacks (eg: Acc, Att, etc)
