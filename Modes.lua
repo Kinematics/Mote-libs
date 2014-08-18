@@ -130,7 +130,7 @@ function M(t, ...)
         end
 
         -- If we were given an explicit 'string' field, construct a string mode class.
-        if t.string or t.string == false then
+        if t.string and type(t.string) == 'string' then
             m._track._type = 'string'
             m._track._count = 1
             m._track._default = 'defaultstring'
@@ -393,7 +393,7 @@ _meta.M.__methods['set'] = function(m, val)
             end
         end
     elseif m._track._type == 'string' then
-        if val == nil or type(val) == 'string' then
+        if type(val) == 'string' then
             m._track._current = 'string'
             m.string = val
         else
@@ -426,4 +426,5 @@ _meta.M.__methods['reset'] = function(m)
 
     return m.Current
 end
+
 
