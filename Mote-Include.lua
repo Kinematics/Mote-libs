@@ -62,8 +62,8 @@ function init_include()
 
     state.EquipStop           = M{['description'] = 'Stop Equipping Gear', 'none', 'precast', 'midcast', 'pet_midcast'}
 
-	state.CombatWeapon        = M(['description']='Combat Weapon', ['string']='')
-	state.CombatForm          = M(['description']='Combat Form', ['string']='')
+	state.CombatWeapon        = M{['description']='Combat Weapon', ['string']=''}
+	state.CombatForm          = M{['description']='Combat Form', ['string']=''}
 
     -- Non-mode vars that are used for state tracking.
 	state.MaxWeaponskillDistance = 0

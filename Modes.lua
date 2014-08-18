@@ -203,13 +203,13 @@ _meta.M.__index = function(m, k)
                 else
                     return false
                 end
-            elseif m._track._type == 'list'
+            elseif m._track._type == 'list' then
                 if not cur or cur == '' or cur:lower() == 'none' then
                     return false
                 else
                     return true
                 end
-            elseif m._track._type == 'boolean'
+            elseif m._track._type == 'boolean' then
                 return true
             end
         elseif lk == 'default' then
@@ -455,7 +455,7 @@ _meta.M.__methods['f_has_value'] = function(m)
         else
             return false
         end
-    elseif m._track._type == 'boolean'
+    elseif m._track._type == 'boolean' then
         return true
     else
         if not cur or cur == '' or cur:lower() == 'none' then
