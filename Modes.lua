@@ -129,15 +129,15 @@ function M(t, ...)
             m._track._description = t['description']
         end
 
-        -- If we were given an explicit 'value' field, construct a string mode class.
-        if t.value or t.value == false then
+        -- If we were given an explicit 'string' field, construct a string mode class.
+        if t.string or t.string == false then
             m._track._type = 'string'
             m._track._count = 1
             m._track._default = 'defaultstring'
 
-            if t.value then
-                m['string'] = t.value
-                m['defaultstring'] = t.value
+            if t.string then
+                m['string'] = t.string
+                m['defaultstring'] = t.string
             end
         -- Otherwise put together a standard list mode class.
         else
