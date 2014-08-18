@@ -343,7 +343,7 @@ function display_current_state()
         msg = msg .. ', WS: ' .. state.WeaponskillMode.value
         
         if state.DefenseMode.value ~= 'None' then
-            msg = msg .. ', ' .. 'Defense: ' .. state.DefenseMode.value .. ' (' .. state[state.DefenseMode.value .. 'DefenseMode'].value .. ')'
+            msg = msg .. ', Defense: ' .. state.DefenseMode.value .. ' (' .. state[state.DefenseMode.value .. 'DefenseMode'].value .. ')'
         end
         
         if state.Kiting.value then
