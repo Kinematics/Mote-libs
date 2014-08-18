@@ -426,3 +426,27 @@ _meta.M.__methods['reset'] = function(m)
 end
 
 
+-- Check to be sure that the mode var has a valid (for its type) value.
+-- String vars must be non-empty.
+-- List vars must not be empty strings, or the word 'none'.
+-- Boolean are always considered valid (can only be true or false).
+_meta.M.__methods['has_value'] = function(m)
+    local cur = m.value
+    if m._track._type == 'string' then
+        if cur and cur ~= '' then
+            return true
+        else
+            return false
+        end
+    elseif m._track._type == 'boolean'
+        return true
+    else
+        if not cur or cur == '' or cur:lower() == 'none' then
+            return false
+        else
+            return true
+        end
+    end
+end
+
+
