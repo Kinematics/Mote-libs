@@ -543,12 +543,12 @@ function get_melee_set()
 	mote_vars.set_breadcrumbs:append('sets')
 	mote_vars.set_breadcrumbs:append('engaged')
 
-	if state.CombatForm.value and meleeSet[state.CombatForm.value] then
+	if state.CombatForm.has_value and meleeSet[state.CombatForm.value] then
 		meleeSet = meleeSet[state.CombatForm.value]
 		mote_vars.set_breadcrumbs:append(state.CombatForm.value)
 	end
 
-	if state.CombatWeapon.value and meleeSet[state.CombatWeapon.value] then
+	if state.CombatWeapon.has_value and meleeSet[state.CombatWeapon.value] then
 		meleeSet = meleeSet[state.CombatWeapon.value]
 		mote_vars.set_breadcrumbs:append(state.CombatWeapon.value)
 	end
@@ -824,12 +824,12 @@ end
 -- Function to handle the logic of selecting the proper ranged set.
 function get_ranged_set(equipSet, spell, spellMap)
 	-- Attach Combat Form and Combat Weapon to set checks
-	if state.CombatForm.value and equipSet[state.CombatForm.value] then
+	if state.CombatForm.has_value and equipSet[state.CombatForm.value] then
 		equipSet = equipSet[state.CombatForm.value]
 		mote_vars.set_breadcrumbs:append(state.CombatForm.value)
 	end
 
-	if state.CombatWeapon.value and equipSet[state.CombatWeapon.value] then
+	if state.CombatWeapon.has_value and equipSet[state.CombatWeapon.value] then
 		equipSet = equipSet[state.CombatWeapon.value]
 		mote_vars.set_breadcrumbs:append(state.CombatWeapon.value)
 	end
