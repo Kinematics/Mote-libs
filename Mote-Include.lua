@@ -868,6 +868,10 @@ function apply_defense(baseSet)
 			defenseSet = defenseSet[group] or defenseSet
 		end
 
+		if customize_defense_set then
+			defenseSet = customize_defense_set(defenseSet)
+		end
+
 		baseSet = set_combine(baseSet, defenseSet)
 	end
 
