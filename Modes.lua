@@ -195,6 +195,23 @@ _meta.M.__index = function(m, k)
             else
                 return m[m._track._current]
             end
+        elseif lk == 'has_value' then
+            local cur = m[m._track._current]
+            if m._track._type == 'string' then
+                if cur and cur ~= '' then
+                    return true
+                else
+                    return false
+                end
+            elseif m._track._type == 'list'
+                if not cur or cur == '' or cur:lower() == 'none' then
+                    return false
+                else
+                    return true
+                end
+            elseif m._track._type == 'boolean'
+                return true
+            end
         elseif lk == 'default' then
             if m._track._type == 'boolean' then
                 return m._track._default
@@ -430,7 +447,7 @@ end
 -- String vars must be non-empty.
 -- List vars must not be empty strings, or the word 'none'.
 -- Boolean are always considered valid (can only be true or false).
-_meta.M.__methods['has_value'] = function(m)
+_meta.M.__methods['f_has_value'] = function(m)
     local cur = m.value
     if m._track._type == 'string' then
         if cur and cur ~= '' then
