@@ -27,11 +27,9 @@
 --
 --
 -- 3) Create a string mode with a specified default value. Construct with a table:
--- CombatWeapon = M{['description']='Melee Mode', ['value']='Dagger'}
--- CombatWeapon = M{['description']='Melee Mode', ['value']=false}
+-- CombatWeapon = M{['description']='Melee Mode', ['string']='Dagger'}
+-- CombatWeapon = M{['description']='Melee Mode', ['string']=''}
 --
--- Note: A 'value' of (boolean) false indicates that the initial (default) value
--- should be nil.
 --
 --
 -- Public information fields (all are case-insensitive):
