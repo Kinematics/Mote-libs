@@ -44,13 +44,13 @@ function init_include()
 	-- General melee offense/defense modes, allowing for hybrid set builds, as well as idle/resting/weaponskill.
 	-- This just defines the vars and sets the descriptions.  List modes with no values automatically
 	-- get assigned a 'Normal' default value.
-	state.OffenseMode     = M{['description'] = 'Offense Mode'}
-	state.HybridMode      = M{['description'] = 'Hybrid Mode'}
-	state.RangedMode      = M{['description'] = 'Ranged Mode'}
-	state.WeaponskillMode = M{['description'] = 'Weaponskill Mode'}
-	state.CastingMode     = M{['description'] = 'Casting Mode'}
-	state.IdleMode        = M{['description'] = 'Idle Mode'}
-	state.RestingMode     = M{['description'] = 'Resting Mode'}
+	state.OffenseMode         = M{['description'] = 'Offense Mode'}
+	state.HybridMode          = M{['description'] = 'Hybrid Mode'}
+	state.RangedMode          = M{['description'] = 'Ranged Mode'}
+	state.WeaponskillMode     = M{['description'] = 'Weaponskill Mode'}
+	state.CastingMode         = M{['description'] = 'Casting Mode'}
+	state.IdleMode            = M{['description'] = 'Idle Mode'}
+	state.RestingMode         = M{['description'] = 'Resting Mode'}
 
 	state.DefenseMode         = M{['description'] = 'Defense Mode', 'None', 'Physical', 'Magical'}
 	state.PhysicalDefenseMode = M{['description'] = 'Physical Defense Mode', 'PDT'}
