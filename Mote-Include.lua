@@ -30,6 +30,9 @@ current_mote_include_version = 2
 function init_include()
     if not mote_include_version or mote_include_version < current_mote_include_version then
         add_to_chat(123,'Warning: Your job file is out of date.  Please update to the latest repository baseline.')
+        rev = mote_include_version or 1
+        include('rev' .. tostring(rev) .. '/Mote-Include')
+        return
     end
     
 	-- Used to define various types of data mappings.  These may be used in the initialization, so load it up front.
