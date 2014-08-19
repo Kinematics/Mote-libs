@@ -196,7 +196,7 @@ _meta.M.__index = function(m, k)
                 return m[m._track._current]
             end
         elseif lk == 'has_value' then
-            return _meta.M.__methods.f_has_value()
+            return _meta.M.__methods.f_has_value(m)
         elseif lk == 'default' then
             if m._track._type == 'boolean' then
                 return m._track._default
