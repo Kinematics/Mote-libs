@@ -330,7 +330,7 @@ function display_current_state()
     if not eventArgs.handled then
         local msg = 'Melee'
         
-        if state.CombatForm.has_value() then
+        if state.CombatForm.has_value then
             msg = msg .. ' (' .. state.CombatForm.value .. ')'
         end
         
@@ -373,7 +373,7 @@ function display_current_caster_state()
     if state.OffenseMode.value ~= 'None' then
         msg = msg .. 'Melee'
 
-        if state.CombatForm.has_value() then
+        if state.CombatForm.has_value then
             msg = msg .. ' (' .. state.CombatForm.value .. ')'
         end
         
