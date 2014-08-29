@@ -430,6 +430,7 @@ function handle_help(cmdParams)
         print('Set bool false:   gs c unset [field]')
         print('Remove gear:      gs c naked')
         print('Show TP Set:      gs c showtp')
+        print('State vars:       gs c help field')
     end
 end
 
