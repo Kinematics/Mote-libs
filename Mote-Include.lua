@@ -262,6 +262,11 @@ function handle_actions(spell, action)
 			display_breadcrumbs(spell, spellMap, action)
 		end
 		
+		-- Global post-handling of this action
+		if not eventArgs.cancel and _G['user_post_'..action] then
+			_G['user_post_'..action](spell, action, spellMap, eventArgs)
+		end
+
 		-- Job-specific post-handling of this action
 		if not eventArgs.cancel and _G['job_post_'..action] then
 			_G['job_post_'..action](spell, action, spellMap, eventArgs)
