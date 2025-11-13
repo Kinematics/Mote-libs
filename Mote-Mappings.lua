@@ -241,7 +241,9 @@ areas.Cities = S{
     "Norg",
     "Eastern Adoulin",
     "Western Adoulin",
-    "Kazham"
+    "Kazham",
+    "Rabao",
+    "Chocobo Circuit",
 }
 -- Adoulin areas, where Ionis will grant special stat bonuses.
 areas.Adoulin = S{
